@@ -30,6 +30,8 @@ const CartProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
+      // await AsyncStorage.removeItem('@GoMarketplace:products');
+
       const productsStoraged = await AsyncStorage.getItem(
         '@GoMarketplace:products',
       );
@@ -91,7 +93,7 @@ const CartProvider: React.FC = ({ children }) => {
 
   const decrement = useCallback(
     async id => {
-      const newProducts = products.map(product => {
+      let newProducts = products.map(product => {
         if (product.id === id) {
           const productUpdated = product;
 
@@ -103,6 +105,8 @@ const CartProvider: React.FC = ({ children }) => {
         }
         return product;
       });
+
+      newProducts = newProducts.filter(product => product.quantity > 0);
 
       setProducts(newProducts);
 
