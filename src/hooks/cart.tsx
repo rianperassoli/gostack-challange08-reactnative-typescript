@@ -30,23 +30,77 @@ const CartProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
-      // TODO LOAD ITEMS FROM ASYNC STORAGE
+      const productsStoraged = await AsyncStorage.getItem(
+        '@GoMarketplace:products',
+      );
+
+      if (productsStoraged) {
+        setProducts(JSON.parse(productsStoraged));
+      }
     }
 
     loadProducts();
   }, []);
 
-  const addToCart = useCallback(async product => {
-    console.log(product);
-  }, []);
+  const addToCart = useCallback(
+    async product => {
+      const newProducts = [...products, product];
 
-  const increment = useCallback(async id => {
-    console.log(id);
-  }, []);
+      setProducts(newProducts);
 
-  const decrement = useCallback(async id => {
-    console.log(id);
-  }, []);
+      await AsyncStorage.setItem(
+        '@GoMarketplace:products',
+        JSON.stringify(newProducts),
+      );
+    },
+    [products],
+  );
+
+  const increment = useCallback(
+    async id => {
+      const newProducts = products.map(product => {
+        if (product.id === id) {
+          const productUpdated = product;
+
+          productUpdated.quantity += 1;
+
+          return productUpdated;
+        }
+        return product;
+      });
+
+      setProducts(newProducts);
+
+      await AsyncStorage.setItem(
+        '@GoMarketplace:products',
+        JSON.stringify(newProducts),
+      );
+    },
+    [products],
+  );
+
+  const decrement = useCallback(
+    async id => {
+      const newProducts = products.map(product => {
+        if (product.id === id) {
+          const productUpdated = product;
+
+          productUpdated.quantity -= 1;
+
+          return productUpdated.quantity > 0 ? productUpdated : ({} as Product);
+        }
+        return product;
+      });
+
+      setProducts(newProducts);
+
+      await AsyncStorage.setItem(
+        '@GoMarketplace:products',
+        JSON.stringify(newProducts),
+      );
+    },
+    [products],
+  );
 
   const value = React.useMemo(
     () => ({ addToCart, increment, decrement, products }),
