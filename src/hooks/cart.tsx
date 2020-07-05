@@ -21,6 +21,8 @@ interface CartContext {
   addToCart(item: Omit<Product, 'quantity'>): void;
   increment(id: string): void;
   decrement(id: string): void;
+  totalValue(): number;
+  totalItems(): number;
 }
 
 const CartContext = createContext<CartContext | null>(null);
@@ -95,7 +97,7 @@ const CartProvider: React.FC = ({ children }) => {
 
   const decrement = useCallback(
     async id => {
-      const newProducts = products.map(product => {
+      let newProducts = products.map(product => {
         if (product.id === id) {
           const productUpdated = product;
 
@@ -105,6 +107,8 @@ const CartProvider: React.FC = ({ children }) => {
         }
         return product;
       });
+
+      newProducts = newProducts.filter(product => product.quantity > 0);
 
       setProducts(newProducts);
 
@@ -116,9 +120,33 @@ const CartProvider: React.FC = ({ children }) => {
     [products],
   );
 
+  const totalValue = useCallback(() => {
+    const totalValueInCart = products.reduce((total, product) => {
+      const totalOfItem = product.price * product.quantity;
+      return total + totalOfItem;
+    }, 0);
+
+    return totalValueInCart || 0;
+  }, [products]);
+
+  const totalItems = useCallback(() => {
+    const totalItemsInCart = products.reduce((total, product) => {
+      return total + product.quantity;
+    }, 0);
+
+    return totalItemsInCart || 0;
+  }, [products]);
+
   const value = React.useMemo(
-    () => ({ addToCart, increment, decrement, products }),
-    [products, addToCart, increment, decrement],
+    () => ({
+      addToCart,
+      increment,
+      decrement,
+      products,
+      totalValue,
+      totalItems,
+    }),
+    [products, addToCart, increment, decrement, totalValue, totalItems],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
