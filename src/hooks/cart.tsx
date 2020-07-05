@@ -30,6 +30,8 @@ const CartProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
+      // await AsyncStorage.removeItem('@GoMarketplace:products');
+
       const productsStoraged = await AsyncStorage.getItem(
         '@GoMarketplace:products',
       );
@@ -47,6 +49,8 @@ const CartProvider: React.FC = ({ children }) => {
       const productInCart = products.find(
         currentProduct => currentProduct.id === product.id,
       );
+
+      console.log(productInCart);
 
       const newProducts = productInCart
         ? products.map(currentProduct =>
@@ -97,9 +101,7 @@ const CartProvider: React.FC = ({ children }) => {
 
           productUpdated.quantity -= 1;
 
-          if (productUpdated.quantity > 0) {
-            return productUpdated;
-          }
+          return productUpdated.quantity > 0 ? productUpdated : ({} as Product);
         }
         return product;
       });
